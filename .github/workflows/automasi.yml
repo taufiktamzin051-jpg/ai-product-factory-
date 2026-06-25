@@ -29,4 +29,3 @@ jobs:
           git add produksi_*.md
           git commit -m "Auto: Update konten harian" || exit 0
           git push
-          
