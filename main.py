@@ -2,28 +2,24 @@ import os
 from datetime import datetime
 import google.generativeai as genai
 
-# Konfigurasi
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-def get_best_model():
-    # Daftar model yang ingin dicoba
-    models_to_try = ['gemini-1.5-flash', 'gemini-pro', 'gemini-1.0-pro']
-    for m in genai.list_models():
-        if m.name in [f"models/{n}" for n in models_to_try]:
-            return m.name
-    return 'gemini-pro' # fallback
-
 try:
-    model_name = get_best_model()
-    model = genai.GenerativeModel(model_name)
+    # Mengambil model pertama yang tersedia di akun Anda
+    models = [m for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+    if not models:
+        raise Exception("Tidak ada model yang ditemukan di akun Anda.")
     
-    prompt = "Tuliskan 1 ide produk digital unik untuk pemula. Format: Judul, Masalah, Solusi."
-    response = model.generate_content(prompt)
+    # Pilih model pertama yang tersedia
+    model = genai.GenerativeModel(models[0].name)
+    print(f"Menggunakan model: {models[0].name}")
+    
+    response = model.generate_content("Tuliskan 1 ide produk digital unik untuk pemula.")
     
     file_name = f"produksi_{datetime.now().strftime('%Y-%m-%d')}.md"
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(response.text)
-    print(f"Sukses menggunakan {model_name}: {file_name}")
+    print(f"File berhasil dibuat: {file_name}")
 
 except Exception as e:
-    print(f"Gagal total: {e}")
+    print(f"Error: {e}")
